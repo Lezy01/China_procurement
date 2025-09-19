@@ -13,5 +13,8 @@ dta/china_procurement_2cat.dta
 dta/china_procurement_primary.dta
 *.dta
 dta/china_procurement_unmatched_items.csv
+dta/china_procurement_matched_items.csv
 *.pkl
 dta/catalog_with_embeddings.csv
+dta/classified
+dta/classified_emb.csv
