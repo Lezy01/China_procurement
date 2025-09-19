@@ -13,7 +13,7 @@ module load python/anaconda-2022.05
 source /software/python-anaconda-2022.05-el8-x86_64/etc/profile.d/conda.sh
 conda activate procurement
 
-FILE_LIST=(dta/batch_dta/*.pkl)
+FILE_LIST=(dta/batch_emb/*.pkl)
 FILE=${FILE_LIST[$SLURM_ARRAY_TASK_ID]}
 
 python classify.py $FILE
