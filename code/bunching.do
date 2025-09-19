@@ -2,7 +2,7 @@ clear
 
 cd "/Users/yxy/UChi/Summer2025/Procurement/dta"
 
-use "china_procurement_bunching.dta",replace
+use "china_procurement_bunching.dta",clear
 
 *** ====== threhold = 200 =========**
 local minval    = 3000000      
@@ -12,7 +12,6 @@ local thr = 4000000
 
 keep if amount >= `minval' & amount <= `maxval'
 keep if threshold == `thr'
-keep if 
 gen bincounts = 0
 gen zj = .
 
@@ -28,35 +27,10 @@ forvalues i = `start'(1)`end' {
     replace zj = `i' if recenter <= (`i'+0.5)*`binwidth' & recenter > (`i'-0.5)*`binwidth'
 }
 
-list amount recenter zj bincounts in 1/20
 
-* 生成bin中心点（对齐到5万的网格）
-preserve
-gen bin_center = zj * `binwidth'   // zj 是你已有的bin索引
-label var bin_center "Bin center (relative to threshold)"
-
-* 按bin聚合，得到每个bin的合同数量
-collapse (mean) bincounts, by(bin_center)
-
-* 画直方图（条形图）
-twoway bar bincounts bin_center, ///
-    barwidth(`binwidth')  ///
-    xtitle("Amount relative to threshold (RMB)") ///
-    ytitle("Number of contracts") ///
-    title("Bunching around threshold 4,000,000 RMB")
-restore
 
 
 collapse (mean) bincounts, by(zj)
-
-
-bunch_count zj bincounts, ///
-    bpoint(-50)        /// 把 cutoff 放到 zj=-50
-    binwidth(1)        /// 因为 zj 是 bin index
-    low_bunch(-2) high_bunch(2)  ///
-    ig_low(-60) ig_high(-40)   /// 这里要围绕 -50 设置拟合范围
-    nboot(500) int2one(1) ///
-    plot(1) plot_fit(1) outvar(all_placebo)
 
 
 set seed 123456
@@ -84,10 +58,18 @@ twoway (area all3 zj) (bar all2 zj), ///
     scheme(sj)
 
 
-bunch_count zj bincounts, ///
-    bpoint(-50)        /// 把 cutoff 放到 zj=-50
-    binwidth(1)        /// 因为 zj 是 bin index
-    low_bunch(-2) high_bunch(2)  ///
-    ig_low(-60) ig_high(-40)   /// 这里要围绕 -50 设置拟合范围
-    nboot(500) int2one(1) ///
-    plot(1) plot_fit(1) outvar(all_placebo)
+* 生成bin中心点（对齐到5万的网格）
+preserve
+gen bin_center = zj * `binwidth'   // zj 是你已有的bin索引
+label var bin_center "Bin center (relative to threshold)"
+
+* 按bin聚合，得到每个bin的合同数量
+collapse (mean) bincounts, by(bin_center)
+
+* 画直方图（条形图）
+twoway bar bincounts bin_center, ///
+    barwidth(`binwidth')  ///
+    xtitle("Amount relative to threshold (RMB)") ///
+    ytitle("Number of contracts") ///
+    title("Bunching around threshold 4,000,000 RMB")
+restore
