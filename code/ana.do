@@ -31,6 +31,7 @@ rename 采购方式 method
 
 keep if inlist(method, "公开招标", "协议供货", "单一来源", "定点采购", ///
     "电子卖场", "竞争性磋商", "竞争性谈判", "询价", "邀请招标")
+	
 
 histogram amount, bin(50) ///
     frequency ///
@@ -203,19 +204,34 @@ rename 采购方式 method
 
 keep if inlist(method, "公开招标", "协议供货", "单一来源", "定点采购", ///
     "电子卖场", "竞争性磋商", "竞争性谈判", "询价", "邀请招标")
-	
-foreach thr in 100 200 300 400{
-	preserve
-    keep if threshold == `thr'   
-    keep if inlist(cat,"服务","工程")
 
-    twoway (histogram amount_stad if cat=="工程", bin(100) color(navy%40)) ///
-           (histogram amount_stad if cat=="服务", bin(100) color(maroon%40)), ///
-           legend(order(1 "工程" 2 "服务")) ///
-           xtitle("Contract amount minus policy threshold") ///
-           ytitle("Number of contracts") ///
-           title("Distribution of amount_stad, threshold = `thr'") ///
-		   name(f`thr',replace)
-	restore
-}
-graph f100 f200 f300 f400
+save "/Users/yxy/UChi/Summer2025/Procurement/dta/china_procurement_temp.dta"
+
+
+keep if threshold == 400
+drop if method == "公开招标"
+rddensity amount_stad, c(0) plot
+
+use "/Users/yxy/UChi/Summer2025/Procurement/dta/china_procurement_temp.dta",clear
+
+gen prob = 0
+replace prob = 1 if method == "公开招标"
+
+* 1. 生成公开招标 dummy
+gen openbid = (method=="公开招标")
+
+* 2. 设定 bin 宽度，比如 10 万
+gen bin = floor(amount/10)
+
+* 3. 计算每个 bin 的公开招标比例
+collapse (mean) prob_open=openbid (count) n=amount, by(bin)
+
+* 4. 恢复横轴为金额
+gen amount_bin = bin*10
+
+twoway (line prob_open amount_bin, lcolor(red)) ///
+       , xline(400)
+
+
+
+

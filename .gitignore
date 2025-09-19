@@ -11,3 +11,7 @@ dta/china_procurement_primary.csv
 dta/china_procurement_2cat.csv
 dta/china_procurement_2cat.dta
 dta/china_procurement_primary.dta
+*.dta
+dta/china_procurement_unmatched_items.csv
+*.pkl
+dta/catalog_with_embeddings.csv
